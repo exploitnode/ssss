@@ -1,19 +1,33 @@
-[# ssss](https://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webphttps://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webphttps://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webphttps://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webphttps://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webp\
+# ==============================
+# Configuration
+# ==============================
+$imageUrl  = "https://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webp"
+$imagePath = "$env:USERPROFILE\Pictures\wallpaper.jpg"
 
-# Replace this with your direct image URL
-$url = "https://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webphttps://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webphttps://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webphttps://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webphttps://assetsio.gnwcdn.com/poznanie-panam-pasazer.jpg?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webp\"
+# ==============================
+# Download image
+# ==============================
+Invoke-WebRequest -Uri $imageUrl -OutFile $imagePath -UseBasicParsing
 
-# Where to save the image
-$path = "$env:USERPROFILE\Pictures\wallpaper.jpg"
+# ==============================
+# Set wallpaper (Windows API)
+# ==============================
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
 
-# Download the image
-Invoke-WebRequest -Uri $url -OutFile $path
+public class Wallpaper {
+    [DllImport("user32.dll", SetLastError = true)]
+    public static extern bool SystemParametersInfo(
+        int uAction,
+        int uParam,
+        string lpvParam,
+        int fuWinIni
+    );
+}
+"@
 
-# Set wallpaper registry values
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name Wallpaper -Value $path
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name WallpaperStyle -Value 10  # Fill
-Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name TileWallpaper -Value 0
-
-# Apply the wallpaper
-rundll32.exe user32.dll, UpdatePerUserSystemParameters
-)
+# SPI_SETDESKWALLPAPER = 20
+# SPIF_UPDATEINIFILE = 0x01
+# SPIF_SENDCHANGE = 0x02
+[Wallpaper]::SystemParametersInfo(20, 0, $imagePath, 0x01 -bor 0x02) | Out-Null
